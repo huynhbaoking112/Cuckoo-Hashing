@@ -1,0 +1,51 @@
+Cuckoo Hashing là gì?
+Định nghĩa: Cuckoo Hashing là một phương pháp lưu trữ và tra cứu dữ liệu trong bảng băm, sử dụng nhiều hàm băm (thường là 2) để đặt mỗi khóa (key) vào một trong các vị trí khả dĩ của nó. Tên "Cuckoo" (con chim cu gáy) xuất phát từ cách nó hoạt động: giống như chim cu gáy chiếm tổ của chim khác, một khóa mới có thể "đẩy" khóa cũ ra khỏi vị trí để chiếm chỗ.
+Mục tiêu: Đảm bảo tra cứu (lookup) nhanh với thời gian trung bình gần O(1) và giảm thiểu xung đột.
+Cách hoạt động cơ bản
+Cấu trúc
+Bảng băm có một mảng (hoặc đôi khi nhiều mảng) với các ô (slot) để lưu trữ khóa và giá trị.
+Sử dụng hai hàm băm độc lập (h1 và h2) để ánh xạ mỗi khóa đến hai vị trí tiềm năng trong bảng.
+Quy trình chèn (Insertion)
+Bắt đầu: Khi chèn một khóa mới (key):
+Tính h1(key) và h2(key) để tìm hai vị trí khả dĩ.
+Đặt khóa vào vị trí h1(key) nếu trống.
+Xung đột: Nếu h1(key) đã có một khóa khác (gọi là keyA):
+Đẩy keyA ra khỏi h1(key).
+Chèn key vào h1(key).
+Tìm vị trí khác cho keyA bằng h2(keyA).
+Lặp lại: Nếu h2(keyA) cũng có khóa (keyB), đẩy keyB ra, đặt keyA vào h2(keyA), rồi tìm chỗ cho keyB bằng h1(keyB) hoặc h2(keyB).
+Quá trình này giống như "chim cu gáy chiếm tổ", tiếp tục cho đến khi mọi khóa đều có chỗ hoặc phát hiện vòng lặp.
+Vòng lặp không giải quyết được: Nếu quá trình đẩy kéo dài quá lâu (vòng lặp vô hạn hoặc vượt ngưỡng), bảng băm được tái cấu trúc (rehash) với kích thước lớn hơn hoặc hàm băm mới.
+Tra cứu (Lookup)
+Để tìm một khóa: Chỉ cần kiểm tra hai vị trí h1(key) và h2(key). Nếu khóa nằm ở một trong hai, tra cứu hoàn tất trong O(1).
+Xóa (Deletion)
+Xóa khóa bằng cách tìm ở h1(key) hoặc h2(key) và xóa nó đi, không cần tái sắp xếp.
+Ví dụ minh họa
+Giả sử bảng băm có 6 ô (0-5), dùng hai hàm băm:
+
+h1(key) = key % 6
+h2(key) = (key % 5) + 1
+Chèn khóa
+Chèn key = 7:
+h1(7) = 7 % 6 = 1 (trống) → Đặt 7 vào ô 1.
+Bảng: [-, 7, -, -, -, -]
+Chèn key = 13:
+h1(13) = 13 % 6 = 1 (đã có 7) → Đẩy 7 ra, đặt 13 vào ô 1.
+h2(7) = (7 % 5) + 1 = 2 + 1 = 3 (trống) → Đặt 7 vào ô 3.
+Bảng: [-, 13, -, 7, -, -]
+Chèn key = 19:
+h1(19) = 19 % 6 = 1 (đã có 13) → Đẩy 13 ra, đặt 19 vào ô 1.
+h2(13) = (13 % 5) + 1 = 3 + 1 = 4 (trống) → Đặt 13 vào ô 4.
+Bảng: [-, 19, -, 7, 13, -]
+Tra cứu
+Tìm 13:
+h1(13) = 1 (có 19, không phải 13).
+h2(13) = 4 (có 13) → Tìm thấy trong O(1).
+Ưu điểm
+Tra cứu nhanh: Chỉ cần kiểm tra tối đa 2 vị trí → O(1) trong trường hợp tốt.
+Hiệu quả không gian: Không cần danh sách liên kết như trong hash chaining.
+Đơn giản: Dễ triển khai với hai hàm băm.
+Nhược điểm
+Chèn phức tạp: Nếu có nhiều xung đột, quá trình đẩy có thể dẫn đến vòng lặp, buộc phải rehash (tốn thời gian).
+Tải tối đa: Bảng cần giữ dưới 50% đầy (load factor < 0.5) để tránh vòng lặp quá nhiều.
+Rehash: Khi bảng đầy hoặc xung đột không giải quyết được, phải tạo bảng mới, tốn tài nguyên.
